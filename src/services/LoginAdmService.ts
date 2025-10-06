@@ -61,7 +61,7 @@ export class LoginAdmService {
       
       await LoginAdm.sequelize?.query(
         `INSERT INTO tbl_usuario (id, username, nome, email, password, ch_ativo, ativo_2fa, hash_2fa, criado_em) 
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
         {
           replacements: [
             nextId,

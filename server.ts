@@ -6,7 +6,6 @@ import dotenv from 'dotenv';
 import { sequelize, initDatabase } from './src/config/database';
 import routes from './src/routes';
 import { QueryTypes } from 'sequelize';
-import { runSeeds } from './src/seeds';
 
 dotenv.config();
 
@@ -43,8 +42,6 @@ async function startServer() {
 
     console.log(`🔹 Banco detectado: ${dbType}`);
     console.log(`🔹 Versão do banco: ${versionString}`);
-
-    await runSeeds();
 
     app.listen(PORT, () => {
       console.log(`🚀 Servidor rodando em http://localhost:${PORT}`);
