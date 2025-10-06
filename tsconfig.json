@@ -1,0 +1,40 @@
+{
+  "compilerOptions": {
+    /* Diretórios */
+    "rootDir": ".",            // raiz do projeto
+    "outDir": "./dist",        // saída compilada
+
+    /* Ambiente Node */
+    "target": "ES2020",
+    "module": "CommonJS",
+    "lib": ["ES2020"],
+    "types": ["node"],
+
+    /* Geração de arquivos */
+    "sourceMap": true,
+    "declaration": true,
+    "declarationMap": true,
+
+    /* Checagens de tipos */
+    "strict": true,
+    "noUncheckedIndexedAccess": true,
+    "exactOptionalPropertyTypes": true,
+
+    /* Outros */
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    "skipLibCheck": true,
+
+    /* Para usar decorators futuramente */
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true
+  },
+  "include": [
+    "src/**/*",
+    "server.ts"           // inclui o server fora do src
+  ],
+  "exclude": [
+    "node_modules",
+    "dist"
+  ]
+}

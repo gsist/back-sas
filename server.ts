@@ -1,0 +1,57 @@
+// src/server.ts
+process.env.SEQUELIZE_SILENT_WARNINGS = "true";
+import cors from 'cors';
+import express from 'express';
+import dotenv from 'dotenv';
+import { sequelize, initDatabase } from './src/config/database';
+import routes from './src/routes';
+import { QueryTypes } from 'sequelize';
+import { runSeeds } from './src/seeds';
+
+dotenv.config();
+
+const app = express();
+const PORT = process.env.PORT_BACKEND || 3001;
+
+// Middleware para JSON
+app.use(express.json());
+
+// Configuração do CORS
+app.use(cors({
+  origin: process.env.CORS_ORIGIN || '*',
+  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  credentials: true,
+}));
+
+// Rotas
+app.use(routes);
+
+// Conecta ao banco e inicia servidor
+async function startServer() {
+  try {
+    await initDatabase(); // Use the initDatabase function from database.ts
+    console.log('✅ Modelos inicializados automaticamente via sequelize.models!');
+
+    const versionResult = await sequelize.query<{ version: string }>(
+      "SELECT VERSION() as version;",
+      { type: QueryTypes.SELECT }
+    );
+
+    const versionString = (versionResult[0] as { version: string })?.version || "desconhecida";
+    const dbType = versionString.toLowerCase().includes("mariadb") ? "MariaDB" : "MySQL";
+
+    console.log(`🔹 Banco detectado: ${dbType}`);
+    console.log(`🔹 Versão do banco: ${versionString}`);
+
+    await runSeeds();
+
+    app.listen(PORT, () => {
+      console.log(`🚀 Servidor rodando em http://localhost:${PORT}`);
+    });
+  } catch (error) {
+    console.error('❌ Erro de conexão:', error);
+  }
+}
+
+startServer();
