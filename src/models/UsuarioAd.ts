@@ -14,12 +14,6 @@ export class LoginAdm extends Model {
   })
   id!: number;
 
-  @AllowNull(true)
-  @Column({
-    type: DataType.STRING(100),
-    field: 'email'
-  })
-  email!: string | null;
 
   @AllowNull(true)
   @Column({
@@ -27,13 +21,6 @@ export class LoginAdm extends Model {
     field: 'nome'
   })
   nome!: string | null;
-
-  @AllowNull(true)
-  @Column({
-    type: DataType.STRING(255),
-    field: 'password'
-  })
-  password!: string | null;
 
   @AllowNull(true)
   @Column({

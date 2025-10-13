@@ -1,6 +1,5 @@
 // src/routes.ts
 import { Router, Request, Response } from 'express';
-import pessoaRouter from './routes/pessoaRouter';
 import adRouter from './routes/Ad';
 
 const router = Router();
@@ -12,7 +11,6 @@ router.get('/', (req: Request, res: Response) => {
 });
 
 // ROTAS
-router.use('/api/pessoa', pessoaRouter);
 router.use('/ad', adRouter);
 
 export default router;
