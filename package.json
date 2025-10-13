@@ -1,11 +1,11 @@
 {
-  "name": "back-mcmv",
+  "name": "back-sasc",
   "version": "1.0.0",
   "main": "server.js",
   "scripts": {
-    "dev": "ts-node-dev --respawn --transpile-only server.ts",
+    "dev": "ts-node-dev --respawn --transpile-only --no-deprecation server.ts",
     "build": "tsc",
-    "start": "node dist/server.js"
+    "start": "node --no-deprecation dist/server.js"
   },
   "dependencies": {
     "axios": "^1.11.0",

@@ -6,7 +6,7 @@ const router = Router();
 
 router.get('/', (req: Request, res: Response) => {
   return res.json({   
-    message: "bem vindo a API do MCMV"
+    message: "bem vindo a API do SASC"
   });
 });
 

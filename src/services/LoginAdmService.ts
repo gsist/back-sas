@@ -146,8 +146,8 @@ export class LoginAdmService {
 
       console.log(`🔐 Gerando segredo 2FA para: ${username}`);
       const secret = speakeasy.generateSecret({
-        name: `MCMV (${username})`,
-        issuer: "MCMV"
+        name: `SASC (${username})`,
+        issuer: "SASC"
       });
 
       user.hash_2fa = secret.base32;
