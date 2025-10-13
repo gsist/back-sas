@@ -1,5 +1,4 @@
 // src/server.ts
-process.env.SEQUELIZE_SILENT_WARNINGS = "true";
 import cors from 'cors';
 import express from 'express';
 import dotenv from 'dotenv';

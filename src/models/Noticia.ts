@@ -1,4 +1,4 @@
-// src/models/Notifica.ts
+// src/models/Noticica.ts
 import { Table, Column, Model, DataType, PrimaryKey, AutoIncrement, AllowNull, Default } from "sequelize-typescript";
 
 @Table({
