@@ -5,7 +5,7 @@ import { Table, Column, Model, DataType, PrimaryKey, AutoIncrement, AllowNull, D
   tableName: "notificas",
   timestamps: false
 })
-export class Notifica extends Model {
+export class Noticia extends Model {
   @PrimaryKey
   @AutoIncrement
   @Column({

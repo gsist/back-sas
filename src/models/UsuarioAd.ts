@@ -5,7 +5,7 @@ import { Table, Column, Model, DataType, PrimaryKey, AutoIncrement, Default, All
   tableName: "tbl_usuario",
   timestamps: false
 })
-export class LoginAdm extends Model {
+export class UsuarioAd extends Model {
   @PrimaryKey
   @AutoIncrement
   @Column({
