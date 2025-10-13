@@ -1,27 +1,27 @@
 // src/services/LoginAdmService.ts
-import { LoginAdm } from "../models/UsuarioAd";
+import { UsuarioAd } from "../models/UsuarioAd";
 import * as speakeasy from "speakeasy";
 import * as QRCode from 'qrcode';
 import { Sequelize, QueryTypes } from 'sequelize';
 
 export class LoginAdmService {
-  async findOrCreateUser(username: string): Promise<LoginAdm> {
+  async findOrCreateUser(username: string): Promise<UsuarioAd> {
     try {
       console.log(`🔍 Buscando usuário: ${username}`);
       
-      let user = await LoginAdm.findOne({ where: { username } });
+      let user = await UsuarioAd.findOne({ where: { username } });
       
       if (!user) {
         console.log(`📝 Criando novo usuário: ${username}`);
         
-        const maxIdResult: any = await LoginAdm.findOne({
+        const maxIdResult: any = await UsuarioAd.findOne({
           attributes: [[Sequelize.fn('MAX', Sequelize.col('id')), 'maxId']],
           raw: true
         });
         
         const nextId = (maxIdResult?.maxId || 0) + 1;
         
-        user = await LoginAdm.create({
+        user = await UsuarioAd.create({
           id: nextId,
           username: username,
           nome: this.formatName(username),
@@ -48,18 +48,18 @@ export class LoginAdmService {
     }
   }
 
-  private async createUserRaw(username: string): Promise<LoginAdm> {
+  private async createUserRaw(username: string): Promise<UsuarioAd> {
     try {
       console.log(`🛠️ Tentando criar usuário com query raw: ${username}`);
       
-      const maxIdResult: any = await LoginAdm.sequelize?.query(
+      const maxIdResult: any = await UsuarioAd.sequelize?.query(
         "SELECT MAX(id) as maxId FROM tbl_usuario",
         { type: QueryTypes.SELECT }
       );
       
       const nextId = (maxIdResult?.[0]?.maxId || 0) + 1;
       
-      await LoginAdm.sequelize?.query(
+      await UsuarioAd.sequelize?.query(
         `INSERT INTO tbl_usuario (id, username, nome, email, password, ch_ativo, ativo_2fa, hash_2fa, criado_em) 
         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
         {
@@ -77,7 +77,7 @@ export class LoginAdmService {
         }
       );
       
-      const user = await LoginAdm.findOne({ where: { username } });
+      const user = await UsuarioAd.findOne({ where: { username } });
       if (!user) {
         throw new Error("Falha ao criar usuário");
       }
@@ -101,7 +101,7 @@ export class LoginAdmService {
     try {
       console.log(`🔍 Verificando status 2FA para: ${username}`);
       
-      let user = await LoginAdm.findOne({ where: { username } });
+      let user = await UsuarioAd.findOne({ where: { username } });
       
       if (!user) {
         console.log(`📋 Usuário ${username} não encontrado, retornando status padrão`);
@@ -138,7 +138,7 @@ export class LoginAdmService {
 
   async generate2FASecret(username: string) {
     try {
-      let user = await LoginAdm.findOne({ where: { username } });
+      let user = await UsuarioAd.findOne({ where: { username } });
       
       if (!user) {
         user = await this.findOrCreateUser(username);
@@ -174,7 +174,7 @@ export class LoginAdmService {
     try {
       console.log(`🔍 Verificando código 2FA para: ${username}, código: ${code}`);
       
-      const user = await LoginAdm.findOne({ where: { username } });
+      const user = await UsuarioAd.findOne({ where: { username } });
       if (!user) {
         throw new Error("Usuário não encontrado");
       }
