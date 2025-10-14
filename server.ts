@@ -23,11 +23,12 @@ app.use(cors({
   credentials: true,
 }));
 
-// Caminho absoluto para a pasta uploads
-const uploadsPath = path.join(__dirname, "src", "uploads"); 
-app.use("/uploads", express.static(uploadsPath));
 
-console.log("Servindo uploads de:", uploadsPath);
+// Caminho absoluto para a pasta uploads
+const uploadsPath = path.join(__dirname, "src", "uploads");
+app.use("/uploads", express.static(uploadsPath));
+console.log("Servindo uploads em:", uploadsPath);
+
 
 // Rotas da API
 app.use(routes);

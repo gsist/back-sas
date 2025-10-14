@@ -15,83 +15,51 @@ export interface UpdateNoticiaData {
 }
 
 export class NoticiaService {
-  /**
-   * Cria uma nova notícia
-   */
+  private getFullImageUrl(url_img?: string | null) {
+    if (!url_img) return null;
+    // Usa a URL do backend do .env ou localhost
+    const host = process.env.BACKEND_URL || `http://localhost:${process.env.PORT_BACKEND || 3049}`;
+    return `${host}${url_img}`;
+  }
+
   async createNoticia(data: CreateNoticiaData): Promise<Noticia> {
-    try {
-      const noticia = await Noticia.create({
-        titulo: data.titulo,
-        conteudo: data.conteudo || null,
-        url_img: data.url_img || null,
-        created_at: new Date()
-      });
-      
-      return noticia;
-    } catch (error) {
-      throw new Error(`Erro ao criar notícia: ${error}`);
-    }
-  }
-
-  /**
-   * Busca todas as notícias
-   */
-  async getAllNoticias(): Promise<Noticia[]> {
-  try {
-    return await Noticia.findAll({
-      order: [['dataCriacao', 'DESC']] // agora correto
+    const noticia = await Noticia.create({
+      titulo: data.titulo,
+      conteudo: data.conteudo || null,
+      url_img: data.url_img || null,
+      created_at: new Date()
     });
-  } catch (error) {
-    console.error("Erro getAllNoticias:", error);
-    throw error;
-  }
-}
 
-  /**
-   * Busca uma notícia por ID
-   */
+    // Atualiza url_img para a URL completa
+    noticia.url_img = this.getFullImageUrl(noticia.url_img);
+    return noticia;
+  }
+
+  async getAllNoticias(): Promise<Noticia[]> {
+    const noticias = await Noticia.findAll({ order: [['dataCriacao', 'DESC']] });
+    return noticias.map(n => {
+      n.url_img = this.getFullImageUrl(n.url_img);
+      return n;
+    });
+  }
+
   async getNoticiaById(id: number): Promise<Noticia | null> {
-  try {
     const noticia = await Noticia.findByPk(id);
     if (!noticia) return null;
-
-    // Se quiser fornecer URL completa da imagem
-    if (noticia.url_img) {
-      noticia.url_img = `${process.env.FRONTEND_URL || 'http://localhost:3000'}${noticia.url_img}`;
-    }
-
+    noticia.url_img = this.getFullImageUrl(noticia.url_img);
     return noticia;
-  } catch (error) {
-    throw new Error(`Erro ao buscar notícia: ${error}`);
   }
-}
 
-
-  /**
-   * Atualiza uma notícia
-   */
   async updateNoticia(id: number, data: UpdateNoticiaData): Promise<Noticia | null> {
-    try {
-      const noticia = await Noticia.findByPk(id);
-      
-      if (!noticia) {
-        return null;
-      }
-
-      await noticia.update(data);
-      return noticia;
-    } catch (error) {
-      throw new Error(`Erro ao atualizar notícia: ${error}`);
-    }
+    const noticia = await Noticia.findByPk(id);
+    if (!noticia) return null;
+    await noticia.update(data);
+    noticia.url_img = this.getFullImageUrl(noticia.url_img);
+    return noticia;
   }
 
-
-  /**
-   * Busca notícias por termo no título ou conteúdo
-   */
   async searchNoticias(term: string): Promise<Noticia[]> {
-  try {
-    return await Noticia.findAll({
+    const noticias = await Noticia.findAll({
       where: {
         [Op.or]: [
           { titulo: { [Op.like]: `%${term}%` } },
@@ -100,11 +68,11 @@ export class NoticiaService {
       },
       order: [['dataCriacao', 'DESC']]
     });
-  } catch (error) {
-    console.error("Erro searchNoticias:", error);
-    throw error;
+    return noticias.map(n => {
+      n.url_img = this.getFullImageUrl(n.url_img);
+      return n;
+    });
   }
-}
 }
 
 export default new NoticiaService();

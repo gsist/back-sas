@@ -1,19 +1,19 @@
 // src/controller/NoticiaController.ts
-// src/controller/NoticiaController.ts
-import { Request, Response } from 'express';
-import NoticiaService, { CreateNoticiaData, UpdateNoticiaData } from '../services/NoticiaService';
+import { Request, Response } from "express";
+import NoticiaService, { CreateNoticiaData, UpdateNoticiaData } from "../services/NoticiaService";
 
 export class NoticiaController {
+  // Criar notícia
   async create(req: Request, res: Response): Promise<Response> {
     try {
       const { titulo, conteudo } = req.body;
 
-      if (!titulo || titulo.trim() === '') {
-        return res.status(400).json({ error: 'Título é obrigatório' });
+      if (!titulo || titulo.trim() === "") {
+        return res.status(400).json({ error: "Título é obrigatório" });
       }
 
       // Salva o caminho da imagem se enviada
-      const url_img = req.file ? `/uploads/${req.file.filename}` : null;
+      const url_img = req.file ? `/uploads/noticias/${req.file.filename}` : null;
 
       const noticiaData: CreateNoticiaData = {
         titulo: titulo.trim(),
@@ -23,60 +23,63 @@ export class NoticiaController {
 
       const noticia = await NoticiaService.createNoticia(noticiaData);
 
-      return res.status(201).json({ message: 'Notícia criada com sucesso', data: noticia });
+      return res.status(201).json({ message: "Notícia criada com sucesso", data: noticia });
     } catch (error) {
-      console.error('Erro ao criar notícia:', error);
-      return res.status(500).json({ error: 'Erro interno do servidor ao criar notícia' });
+      console.error("Erro ao criar notícia:", error);
+      return res.status(500).json({ error: "Erro interno do servidor ao criar notícia" });
     }
   }
 
+  // Listar todas as notícias
   async getAll(req: Request, res: Response): Promise<Response> {
     try {
       const noticias = await NoticiaService.getAllNoticias();
       return res.status(200).json({
-        message: 'Notícias recuperadas com sucesso',
+        message: "Notícias recuperadas com sucesso",
         data: noticias,
         total: noticias.length,
       });
     } catch (error) {
-      console.error('Erro ao buscar notícias:', error);
-      return res.status(500).json({ error: 'Erro interno do servidor ao buscar notícias' });
+      console.error("Erro ao buscar notícias:", error);
+      return res.status(500).json({ error: "Erro interno do servidor ao buscar notícias" });
     }
   }
 
+  // Buscar notícia por ID
   async getById(req: Request, res: Response): Promise<Response> {
     try {
       const { id } = req.params;
 
-      if (!id) return res.status(400).json({ error: 'ID é obrigatório' });
+      if (!id) return res.status(400).json({ error: "ID é obrigatório" });
 
       const noticiaId = parseInt(id, 10);
-      if (isNaN(noticiaId)) return res.status(400).json({ error: 'ID inválido' });
+      if (isNaN(noticiaId)) return res.status(400).json({ error: "ID inválido" });
 
       const noticia = await NoticiaService.getNoticiaById(noticiaId);
-      if (!noticia) return res.status(404).json({ error: 'Notícia não encontrada' });
+      if (!noticia) return res.status(404).json({ error: "Notícia não encontrada" });
 
-      return res.status(200).json({ message: 'Notícia recuperada com sucesso', data: noticia });
+      return res.status(200).json({ message: "Notícia recuperada com sucesso", data: noticia });
     } catch (error) {
-      console.error('Erro ao buscar notícia:', error);
-      return res.status(500).json({ error: 'Erro interno do servidor ao buscar notícia' });
+      console.error("Erro ao buscar notícia:", error);
+      return res.status(500).json({ error: "Erro interno do servidor ao buscar notícia" });
     }
   }
 
+  // Atualizar notícia
   async update(req: Request, res: Response): Promise<Response> {
     try {
       const { id } = req.params;
 
-      if (!id) return res.status(400).json({ error: 'ID é obrigatório' });
+      if (!id) return res.status(400).json({ error: "ID é obrigatório" });
 
       const noticiaId = parseInt(id, 10);
-      if (isNaN(noticiaId)) return res.status(400).json({ error: 'ID inválido' });
+      if (isNaN(noticiaId)) return res.status(400).json({ error: "ID inválido" });
 
       const { titulo, conteudo } = req.body;
 
       const updateData: UpdateNoticiaData = {};
       if (titulo !== undefined) {
-        if (titulo.trim() === '') return res.status(400).json({ error: 'Título não pode ser vazio' });
+        if (titulo.trim() === "") return res.status(400).json({ error: "Título não pode ser vazio" });
         updateData.titulo = titulo.trim();
       }
 
@@ -84,35 +87,36 @@ export class NoticiaController {
 
       // Atualiza a imagem se foi enviada
       if (req.file) {
-        updateData.url_img = `/uploads/${req.file.filename}`;
+        updateData.url_img = `/uploads/noticias/${req.file.filename}`;
       }
 
       const noticia = await NoticiaService.updateNoticia(noticiaId, updateData);
-      if (!noticia) return res.status(404).json({ error: 'Notícia não encontrada' });
+      if (!noticia) return res.status(404).json({ error: "Notícia não encontrada" });
 
-      return res.status(200).json({ message: 'Notícia atualizada com sucesso', data: noticia });
+      return res.status(200).json({ message: "Notícia atualizada com sucesso", data: noticia });
     } catch (error) {
-      console.error('Erro ao atualizar notícia:', error);
-      return res.status(500).json({ error: 'Erro interno do servidor ao atualizar notícia' });
+      console.error("Erro ao atualizar notícia:", error);
+      return res.status(500).json({ error: "Erro interno do servidor ao atualizar notícia" });
     }
   }
 
+  // Buscar notícias por termo
   async search(req: Request, res: Response): Promise<Response> {
     try {
       const q = req.query.q;
-      if (!q || typeof q !== 'string' || q.trim() === '')
-        return res.status(400).json({ error: 'Termo de busca é obrigatório' });
+      if (!q || typeof q !== "string" || q.trim() === "")
+        return res.status(400).json({ error: "Termo de busca é obrigatório" });
 
       const noticias = await NoticiaService.searchNoticias(q.trim());
       return res.status(200).json({
-        message: 'Busca realizada com sucesso',
+        message: "Busca realizada com sucesso",
         data: noticias,
         total: noticias.length,
         term: q.trim(),
       });
     } catch (error) {
-      console.error('Erro ao buscar notícias:', error);
-      return res.status(500).json({ error: 'Erro interno do servidor ao buscar notícias' });
+      console.error("Erro ao buscar notícias:", error);
+      return res.status(500).json({ error: "Erro interno do servidor ao buscar notícias" });
     }
   }
 }

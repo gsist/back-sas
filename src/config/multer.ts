@@ -2,16 +2,22 @@
 
 import multer from "multer";
 import path from "path";
+import fs from "fs";
 
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, path.join(__dirname, "../uploads")); // pasta de destino
-  },
-  filename: (req, file, cb) => {
-    const ext = path.extname(file.originalname);
-    const filename = `${Date.now()}${ext}`; // evita conflitos de nome
-    cb(null, filename);
-  },
-});
+function makeStorage(folderName: string) {
+  const folderPath = path.join(__dirname, "../uploads", folderName);
 
-export const upload = multer({ storage });
+  // garante que a pasta existe
+  if (!fs.existsSync(folderPath)) fs.mkdirSync(folderPath, { recursive: true });
+
+  return multer.diskStorage({
+    destination: (req, file, cb) => cb(null, folderPath),
+    filename: (req, file, cb) => {
+      const ext = path.extname(file.originalname);
+      cb(null, `${Date.now()}${ext}`);
+    },
+  });
+}
+
+export const uploadNoticias = multer({ storage: makeStorage("noticias") });
+export const uploadDestaques = multer({ storage: makeStorage("destaques") });

@@ -1,19 +1,16 @@
 // src/routes/noticiaRouter.ts
 import { Router } from "express";
 import NoticiaController from "../controller/NoticiaController";
-import { upload } from "../config/multer"; // Isso aqui é pra cosiar a imagem certinho
+import { uploadNoticias } from "../config/multer";
 
 const noticiaRouter = Router();
 
-// Buscar notícias
-noticiaRouter.get("/search", NoticiaController.search);
 noticiaRouter.get("/", NoticiaController.getAll);
+noticiaRouter.get("/search", NoticiaController.search);
 noticiaRouter.get("/:id", NoticiaController.getById);
 
-// Criar notícia com upload de imagem
-noticiaRouter.post("/", upload.single("imagem"), NoticiaController.create);
-
-// Atualizar notícia (opcional: pode receber nova imagem)
-noticiaRouter.put("/:id", upload.single("imagem"), NoticiaController.update);
+// Aqui: upload de uma imagem
+noticiaRouter.post("/", uploadNoticias.single("imagem"), NoticiaController.create);
+noticiaRouter.put("/:id", uploadNoticias.single("imagem"), NoticiaController.update);
 
 export default noticiaRouter;
