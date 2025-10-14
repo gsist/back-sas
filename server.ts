@@ -2,6 +2,7 @@
 import cors from 'cors';
 import express from 'express';
 import dotenv from 'dotenv';
+import path from 'path';
 import { sequelize, initDatabase } from './src/config/database';
 import routes from './src/routes';
 import { QueryTypes } from 'sequelize';
@@ -22,13 +23,18 @@ app.use(cors({
   credentials: true,
 }));
 
-// Rotas
+// Servir arquivos da pasta uploads
+const uploadsPath = path.resolve(__dirname, process.env.NODE_ENV === "production" ? "./uploads" : "../src/uploads");
+app.use("/uploads", express.static(uploadsPath));
+console.log("Servindo uploads em:", uploadsPath);
+
+// Rotas da API
 app.use(routes);
 
 // Conecta ao banco e inicia servidor
 async function startServer() {
   try {
-    await initDatabase(); // Use the initDatabase function from database.ts
+    await initDatabase(); // Conecta ao banco
     console.log('✅ Modelos inicializados automaticamente via sequelize.models!');
 
     const versionResult = await sequelize.query<{ version: string }>(

@@ -37,28 +37,35 @@ export class NoticiaService {
    * Busca todas as notícias
    */
   async getAllNoticias(): Promise<Noticia[]> {
-    try {
-      const noticias = await Noticia.findAll({
-        order: [['created_at', 'DESC']]
-      });
-      
-      return noticias;
-    } catch (error) {
-      throw new Error(`Erro ao buscar notícias: ${error}`);
-    }
+  try {
+    return await Noticia.findAll({
+      order: [['dataCriacao', 'DESC']] // agora correto
+    });
+  } catch (error) {
+    console.error("Erro getAllNoticias:", error);
+    throw error;
   }
+}
 
   /**
    * Busca uma notícia por ID
    */
   async getNoticiaById(id: number): Promise<Noticia | null> {
-    try {
-      const noticia = await Noticia.findByPk(id);
-      return noticia;
-    } catch (error) {
-      throw new Error(`Erro ao buscar notícia: ${error}`);
+  try {
+    const noticia = await Noticia.findByPk(id);
+    if (!noticia) return null;
+
+    // Se quiser fornecer URL completa da imagem
+    if (noticia.url_img) {
+      noticia.url_img = `${process.env.FRONTEND_URL || 'http://localhost:3000'}${noticia.url_img}`;
     }
+
+    return noticia;
+  } catch (error) {
+    throw new Error(`Erro ao buscar notícia: ${error}`);
   }
+}
+
 
   /**
    * Atualiza uma notícia
@@ -83,22 +90,21 @@ export class NoticiaService {
    * Busca notícias por termo no título ou conteúdo
    */
   async searchNoticias(term: string): Promise<Noticia[]> {
-    try {      
-      const noticias = await Noticia.findAll({
-        where: {
-          [Op.or]: [
-            { titulo: { [Op.like]: `%${term}%` } },
-            { conteudo: { [Op.like]: `%${term}%` } }
-          ]
-        },
-        order: [['created_at', 'DESC']]
-      });
-      
-      return noticias;
-    } catch (error) {
-      throw new Error(`Erro ao buscar notícias: ${error}`);
-    }
+  try {
+    return await Noticia.findAll({
+      where: {
+        [Op.or]: [
+          { titulo: { [Op.like]: `%${term}%` } },
+          { conteudo: { [Op.like]: `%${term}%` } }
+        ]
+      },
+      order: [['dataCriacao', 'DESC']]
+    });
+  } catch (error) {
+    console.error("Erro searchNoticias:", error);
+    throw error;
   }
+}
 }
 
 export default new NoticiaService();

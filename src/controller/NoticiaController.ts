@@ -1,3 +1,4 @@
+// src/controller/NoticiaController.ts
 import { Request, Response } from 'express';
 import NoticiaService, { CreateNoticiaData, UpdateNoticiaData } from '../services/NoticiaService';
 
