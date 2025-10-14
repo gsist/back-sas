@@ -1,16 +1,18 @@
 // src/models/Noticica.ts
-import { Table, Column, Model, DataType, PrimaryKey, AutoIncrement, AllowNull, Default } from "sequelize-typescript";
+import { 
+  Table, Column, Model, DataType, PrimaryKey, 
+  AutoIncrement, AllowNull, Default 
+} from "sequelize-typescript";
 
 @Table({
-  tableName: "notificas",
+  tableName: "noticias",
   timestamps: false
 })
 export class Noticia extends Model {
   @PrimaryKey
   @AutoIncrement
   @Column({
-    type: DataType.INTEGER,
-    autoIncrement: true
+    type: DataType.INTEGER
   })
   id!: number;
 
@@ -21,12 +23,12 @@ export class Noticia extends Model {
   })
   titulo!: string;
 
-  @AllowNull(true)
+  @AllowNull(false)
   @Column({
     type: DataType.TEXT,
     field: "conteudo"
   })
-  conteudo!: string | null;
+  conteudo!: string;
 
   @AllowNull(true)
   @Column({
@@ -35,11 +37,11 @@ export class Noticia extends Model {
   })
   url_img!: string | null;
 
-  @AllowNull(true)
+  @AllowNull(false)
   @Default(DataType.NOW)
   @Column({
     type: DataType.DATE,
-    field: "created_at"
+    field: "data_criacao"
   })
-  created_at!: Date;
+  dataCriacao!: Date;
 }

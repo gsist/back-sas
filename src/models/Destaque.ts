@@ -1,5 +1,8 @@
 // src/models/Destaque.ts
-import { Table, Column, Model, DataType, PrimaryKey, AutoIncrement, AllowNull, Default } from "sequelize-typescript";
+import { 
+  Table, Column, Model, DataType, PrimaryKey, 
+  AutoIncrement, AllowNull, Default 
+} from "sequelize-typescript";
 
 @Table({
   tableName: "destaques",
@@ -9,8 +12,7 @@ export class Destaque extends Model {
   @PrimaryKey
   @AutoIncrement
   @Column({
-    type: DataType.INTEGER,
-    autoIncrement: true
+    type: DataType.INTEGER
   })
   id!: number;
 
@@ -28,11 +30,11 @@ export class Destaque extends Model {
   })
   url_img!: string | null;
 
-  @AllowNull(true)
+  @AllowNull(false)
   @Default(DataType.NOW)
   @Column({
     type: DataType.DATE,
-    field: "created_at"
+    field: "data_criacao"
   })
-  created_at!: Date;
+  dataCriacao!: Date;
 }
