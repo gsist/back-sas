@@ -1,20 +1,24 @@
 // src/controller/NoticiaController.ts
+// src/controller/NoticiaController.ts
 import { Request, Response } from 'express';
 import NoticiaService, { CreateNoticiaData, UpdateNoticiaData } from '../services/NoticiaService';
 
 export class NoticiaController {
   async create(req: Request, res: Response): Promise<Response> {
     try {
-      const { titulo, conteudo, url_img } = req.body;
+      const { titulo, conteudo } = req.body;
 
       if (!titulo || titulo.trim() === '') {
         return res.status(400).json({ error: 'Título é obrigatório' });
       }
 
+      // Salva o caminho da imagem se enviada
+      const url_img = req.file ? `/uploads/${req.file.filename}` : null;
+
       const noticiaData: CreateNoticiaData = {
         titulo: titulo.trim(),
         conteudo: conteudo ? conteudo.trim() : null,
-        url_img: url_img ? url_img.trim() : null,
+        url_img,
       };
 
       const noticia = await NoticiaService.createNoticia(noticiaData);
@@ -29,7 +33,11 @@ export class NoticiaController {
   async getAll(req: Request, res: Response): Promise<Response> {
     try {
       const noticias = await NoticiaService.getAllNoticias();
-      return res.status(200).json({ message: 'Notícias recuperadas com sucesso', data: noticias, total: noticias.length });
+      return res.status(200).json({
+        message: 'Notícias recuperadas com sucesso',
+        data: noticias,
+        total: noticias.length,
+      });
     } catch (error) {
       console.error('Erro ao buscar notícias:', error);
       return res.status(500).json({ error: 'Erro interno do servidor ao buscar notícias' });
@@ -40,14 +48,10 @@ export class NoticiaController {
     try {
       const { id } = req.params;
 
-      if (!id) {
-        return res.status(400).json({ error: 'ID é obrigatório' });
-      }
+      if (!id) return res.status(400).json({ error: 'ID é obrigatório' });
 
       const noticiaId = parseInt(id, 10);
-      if (isNaN(noticiaId)) {
-        return res.status(400).json({ error: 'ID inválido' });
-      }
+      if (isNaN(noticiaId)) return res.status(400).json({ error: 'ID inválido' });
 
       const noticia = await NoticiaService.getNoticiaById(noticiaId);
       if (!noticia) return res.status(404).json({ error: 'Notícia não encontrada' });
@@ -68,7 +72,7 @@ export class NoticiaController {
       const noticiaId = parseInt(id, 10);
       if (isNaN(noticiaId)) return res.status(400).json({ error: 'ID inválido' });
 
-      const { titulo, conteudo, url_img } = req.body;
+      const { titulo, conteudo } = req.body;
 
       const updateData: UpdateNoticiaData = {};
       if (titulo !== undefined) {
@@ -77,7 +81,11 @@ export class NoticiaController {
       }
 
       updateData.conteudo = conteudo !== undefined ? (conteudo ? conteudo.trim() : null) : undefined;
-      updateData.url_img = url_img !== undefined ? (url_img ? url_img.trim() : null) : undefined;
+
+      // Atualiza a imagem se foi enviada
+      if (req.file) {
+        updateData.url_img = `/uploads/${req.file.filename}`;
+      }
 
       const noticia = await NoticiaService.updateNoticia(noticiaId, updateData);
       if (!noticia) return res.status(404).json({ error: 'Notícia não encontrada' });
@@ -92,10 +100,16 @@ export class NoticiaController {
   async search(req: Request, res: Response): Promise<Response> {
     try {
       const q = req.query.q;
-      if (!q || typeof q !== 'string' || q.trim() === '') return res.status(400).json({ error: 'Termo de busca é obrigatório' });
+      if (!q || typeof q !== 'string' || q.trim() === '')
+        return res.status(400).json({ error: 'Termo de busca é obrigatório' });
 
       const noticias = await NoticiaService.searchNoticias(q.trim());
-      return res.status(200).json({ message: 'Busca realizada com sucesso', data: noticias, total: noticias.length, term: q.trim() });
+      return res.status(200).json({
+        message: 'Busca realizada com sucesso',
+        data: noticias,
+        total: noticias.length,
+        term: q.trim(),
+      });
     } catch (error) {
       console.error('Erro ao buscar notícias:', error);
       return res.status(500).json({ error: 'Erro interno do servidor ao buscar notícias' });

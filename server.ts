@@ -23,10 +23,11 @@ app.use(cors({
   credentials: true,
 }));
 
-// Servir arquivos da pasta uploads
-const uploadsPath = path.resolve(__dirname, process.env.NODE_ENV === "production" ? "./uploads" : "../src/uploads");
+// Caminho absoluto para a pasta uploads
+const uploadsPath = path.join(__dirname, "src", "uploads"); 
 app.use("/uploads", express.static(uploadsPath));
-console.log("Servindo uploads em:", uploadsPath);
+
+console.log("Servindo uploads de:", uploadsPath);
 
 // Rotas da API
 app.use(routes);
