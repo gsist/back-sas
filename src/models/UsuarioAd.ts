@@ -1,46 +1,54 @@
 // src/models/UsuarioAd.ts
-import { Table, Column, Model, DataType, PrimaryKey, AutoIncrement, Default, AllowNull } from "sequelize-typescript";
+import {
+  Table,
+  Column,
+  Model,
+  DataType,
+  PrimaryKey,
+  AutoIncrement,
+  Default,
+  AllowNull,
+} from "sequelize-typescript";
 
 @Table({
-  tableName: "tbl_usuario",
-  timestamps: false
+  tableName: "usuario",
+  timestamps: false,
 })
 export class UsuarioAd extends Model {
   @PrimaryKey
   @AutoIncrement
   @Column({
     type: DataType.INTEGER,
-    autoIncrement: true
+    autoIncrement: true,
   })
   id!: number;
 
-
-  @AllowNull(true)
+  @AllowNull(false)
   @Column({
     type: DataType.STRING(100),
-    field: 'nome'
+    field: "nome",
   })
-  nome!: string | null;
+  nome!: string;
 
-  @AllowNull(true)
+  @AllowNull(false)
   @Column({
-    type: DataType.STRING(255),
-    field: 'username'
+    type: DataType.STRING(60),
+    field: "username",
   })
-  username!: string | null;
+  username!: string;
 
   @AllowNull(true)
   @Default(1)
   @Column({
     type: DataType.TINYINT,
-    field: 'ch_ativo'
+    field: "ch_ativo",
   })
   ch_ativo!: number | null;
 
   @AllowNull(true)
   @Column({
     type: DataType.STRING(255),
-    field: 'hash_2fa'
+    field: "hash_2fa",
   })
   hash_2fa!: string | null;
 
@@ -48,15 +56,7 @@ export class UsuarioAd extends Model {
   @Default(0)
   @Column({
     type: DataType.TINYINT,
-    field: 'ativo_2fa'
+    field: "ativo_2fa",
   })
   ativo_2fa!: number;
-
-  @AllowNull(true)
-  @Default(DataType.NOW)
-  @Column({
-    type: DataType.DATE,
-    field: 'criado_em'
-  })
-  criado_em!: Date;
 }
