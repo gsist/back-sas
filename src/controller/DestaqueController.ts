@@ -1,12 +1,16 @@
+// src/controller/DestaqueController.ts
 import { Request, Response } from "express";
 import DestaqueService, { CreateDestaqueData, UpdateDestaqueData } from "../services/DestaqueService";
 
 export class DestaqueController {
   async create(req: Request, res: Response): Promise<Response> {
     try {
-      const { titulo } = req.body;
+      console.log("BODY RECEBIDO:", req.body);
+      console.log("FILE RECEBIDO:", req.file);
+      
+      const titulo = req.body.titulo || req.body?.fields?.titulo;
       if (!titulo || titulo.trim() === "") {
-        return res.status(400).json({ error: "Título é obrigatório" });
+        return res.status(400).json({ error: "Título é obrigatório em destaque" });
       }
 
       const url_img = req.file ? `/uploads/destaques/${req.file.filename}` : null;
@@ -60,7 +64,7 @@ export class DestaqueController {
       const destaqueId = parseInt(id, 10);
       if (isNaN(destaqueId)) return res.status(400).json({ error: "ID inválido" });
 
-      const { titulo } = req.body;
+      const titulo = req.body.titulo || req.body?.fields?.titulo;
       const updateData: UpdateDestaqueData = {};
 
       if (titulo !== undefined) {

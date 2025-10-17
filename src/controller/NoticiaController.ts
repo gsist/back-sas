@@ -9,7 +9,7 @@ export class NoticiaController {
       const { titulo, conteudo } = req.body;
 
       if (!titulo || titulo.trim() === "") {
-        return res.status(400).json({ error: "Título é obrigatório" });
+        return res.status(400).json({ error: "Título é obrigatório em noticia" });
       }
 
       // Salva o caminho da imagem se enviada

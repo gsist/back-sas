@@ -2,6 +2,7 @@
 import { Router, Request, Response } from 'express';
 import adRouter from './routes/Ad';
 import noticiaRouter from './routes/noticiaRouter';
+import destaqueRouter from './routes/destaqueRouter';
 
 const router = Router();
 
@@ -14,5 +15,7 @@ router.get('/', (req: Request, res: Response) => {
 // ROTAS
 router.use('/ad', adRouter);
 router.use('/noticias', noticiaRouter);
+router.use('/destaques', destaqueRouter);
+
 
 export default router;
