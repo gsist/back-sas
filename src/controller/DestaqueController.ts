@@ -12,12 +12,9 @@ export class DestaqueController {
 
       const url_img = req.file ? `/uploads/destaques/${req.file.filename}` : null;
 
-      const destaqueData: CreateDestaqueData = {
-        titulo: titulo.trim(),
-        url_img,
-      };
-
+      const destaqueData: CreateDestaqueData = { titulo: titulo.trim(), url_img };
       const destaque = await DestaqueService.createDestaque(destaqueData);
+
       return res.status(201).json({ message: "Destaque criado com sucesso", data: destaque });
     } catch (error) {
       console.error("Erro ao criar destaque:", error);
@@ -73,11 +70,11 @@ export class DestaqueController {
       const destaqueId = parseInt(id, 10);
       if (isNaN(destaqueId)) return res.status(400).json({ error: "ID inválido" });
 
-      const destaque = await DestaqueService.toggleArquivarDestaque(destaqueId);
+      const destaque = await DestaqueService.toggleAtivoDestaque(destaqueId);
       if (!destaque) return res.status(404).json({ error: "Destaque não encontrado" });
 
       return res.status(200).json({
-        message: `Destaque ${destaque.arquivado ? "arquivado" : "desarquivado"} com sucesso`,
+        message: `Destaque ${destaque.ativo ? "ativado" : "arquivado"} com sucesso`,
         data: destaque,
       });
     } catch (error) {
@@ -88,3 +85,4 @@ export class DestaqueController {
 }
 
 export default new DestaqueController();
+

@@ -1,5 +1,3 @@
-// src/services/DestaqueService.ts
-
 import { Destaque } from "../models/Destaque";
 
 export interface CreateDestaqueData {
@@ -10,7 +8,7 @@ export interface CreateDestaqueData {
 export interface UpdateDestaqueData {
   titulo?: string;
   url_img?: string | null;
-  arquivado?: boolean; // ✅ adicionamos aqui
+  ativo?: boolean;
 }
 
 export class DestaqueService {
@@ -19,7 +17,7 @@ export class DestaqueService {
       titulo: data.titulo,
       url_img: data.url_img || null,
       dataCriacao: new Date(),
-      arquivado: false
+      ativo: true
     });
   }
 
@@ -41,11 +39,11 @@ export class DestaqueService {
     return await Destaque.findByPk(id);
   }
 
-  async toggleArquivarDestaque(id: number): Promise<Destaque | null> {
+  async toggleAtivoDestaque(id: number): Promise<Destaque | null> {
     const destaque = await Destaque.findByPk(id);
     if (!destaque) return null;
 
-    destaque.arquivado = !destaque.arquivado;
+    destaque.ativo = !destaque.ativo;
     await destaque.save();
     return destaque;
   }
