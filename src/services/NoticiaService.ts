@@ -76,23 +76,6 @@ export class NoticiaService {
     noticia.url_img = this.getFullImageUrl(noticia.url_img);
     return noticia;
   }
-
-  async searchNoticias(term: string): Promise<Noticia[]> {
-    const noticias = await Noticia.findAll({
-      where: {
-        [Op.or]: [
-          { titulo: { [Op.like]: `%${term}%` } },
-          { conteudo: { [Op.like]: `%${term}%` } },
-        ],
-      },
-      order: [["dataCriacao", "DESC"]],
-    });
-
-    return noticias.map((n) => {
-      n.url_img = this.getFullImageUrl(n.url_img);
-      return n;
-    });
-  }
 }
 
 export default new NoticiaService();

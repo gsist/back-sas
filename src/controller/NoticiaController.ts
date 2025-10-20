@@ -75,22 +75,22 @@ export class NoticiaController {
     }
   }
 
-  async search(req: Request, res: Response): Promise<Response> {
+  async getById(req: Request, res: Response): Promise<Response> {
     try {
-      const q = req.query.q;
-      if (!q || typeof q !== "string" || q.trim() === "")
-        return res.status(400).json({ error: "Termo de busca é obrigatório" });
+      const { id } = req.params;
 
-      const noticias = await NoticiaService.searchNoticias(q.trim());
-      return res.status(200).json({
-        message: "Busca realizada com sucesso",
-        data: noticias,
-        total: noticias.length,
-        term: q.trim(),
-      });
+      if (!id) return res.status(400).json({ error: "ID é obrigatório" });
+
+      const noticiaId = parseInt(id, 10);
+      if (isNaN(noticiaId)) return res.status(400).json({ error: "ID inválido" });
+
+      const noticia = await NoticiaService.getNoticiaById(noticiaId);
+      if (!noticia) return res.status(404).json({ error: "Notícia não encontrada" });
+
+      return res.status(200).json({ message: "Notícia recuperada com sucesso", data: noticia });
     } catch (error) {
-      console.error("Erro ao buscar notícias:", error);
-      return res.status(500).json({ error: "Erro interno do servidor ao buscar notícias" });
+      console.error("Erro ao buscar notícia:", error);
+      return res.status(500).json({ error: "Erro interno do servidor ao buscar notícia" });
     }
   }
 

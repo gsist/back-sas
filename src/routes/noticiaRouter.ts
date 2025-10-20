@@ -6,13 +6,11 @@ import { uploadNoticias } from "../config/multer";
 const noticiaRouter = Router();
 
 noticiaRouter.get("/", NoticiaController.getAll);
-noticiaRouter.get("/search", NoticiaController.search);
+noticiaRouter.get("/:id", NoticiaController.getById);
 noticiaRouter.put("/arquivar/:id", NoticiaController.arquivar);
 
 // Aqui: upload de uma imagem
-noticiaRouter.post("/create", uploadNoticias.single("imagem"), NoticiaController.create);
-
+noticiaRouter.post("/creat", uploadNoticias.single("imagem"), NoticiaController.create);
 noticiaRouter.put("/:id", uploadNoticias.single("imagem"), NoticiaController.update);
-
 
 export default noticiaRouter;
