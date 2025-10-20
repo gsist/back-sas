@@ -1,4 +1,4 @@
-// src/services/LoginAdmService.ts
+// src/services/LoginAdmService.ts - CORRIGIDO
 import { UsuarioAd } from "../models/UsuarioAd";
 import * as speakeasy from "speakeasy";
 import * as QRCode from 'qrcode';
@@ -117,7 +117,7 @@ export class LoginAdmService {
       const status = {
         has2FA: user.ativo_2fa === 1 && !!user.hash_2fa,
         is2FASetup: !!user.hash_2fa,
-        needs2FASetup: !user.ativo_2fa && !!user.hash_2fa,
+        needs2FASetup: user.ativo_2fa === 0 && !!user.hash_2fa,
         username: user.username,
         userId: user.id
       };
@@ -145,22 +145,29 @@ export class LoginAdmService {
       }
 
       console.log(`🔐 Gerando segredo 2FA para: ${username}`);
+      
       const secret = speakeasy.generateSecret({
         name: `SASC (${username})`,
-        issuer: "SASC"
+        issuer: "SASC",
+        length: 20
       });
+
+      console.log(`📋 Segredo base32 gerado: ${secret.base32}`);
 
       user.hash_2fa = secret.base32;
       user.ativo_2fa = 0;
       await user.save();
 
-      console.log(`✅ Segredo 2FA gerado e salvo para: ${username}`);
+      console.log(`✅ Segredo 2FA salvo no banco para: ${username}`);
 
-      const qrCodeUrl = await QRCode.toDataURL(secret.otpauth_url || '');
+      const otpauthUrl = secret.otpauth_url;
+      console.log(`📱 URL OTPAuth: ${otpauthUrl}`);
+      
+      const qrCodeUrl = await QRCode.toDataURL(otpauthUrl || '');
 
       return {
         secret: secret.base32,
-        otpauth_url: secret.otpauth_url,
+        otpauth_url: otpauthUrl,
         qrCodeUrl,
         username: username
       };
@@ -183,20 +190,25 @@ export class LoginAdmService {
         throw new Error("2FA não configurado para este usuário");
       }
 
+      console.log(`📋 Segredo do usuário: ${user.hash_2fa}`);
+      
+      // CORREÇÃO: Aumentar window para 6 para cobrir atraso de tempo
       const verified = speakeasy.totp.verify({
         secret: user.hash_2fa,
         encoding: "base32",
         token: code,
-        window: 2
+        window: 6
       });
 
+      console.log(`✅ Resultado verificação: ${verified}`);
+
       if (verified && user.ativo_2fa === 0) {
-        console.log(`✅ Ativando 2FA para: ${username}`);
+        console.log(`🎯 Ativando 2FA para: ${username}`);
         user.ativo_2fa = 1;
         await user.save();
+        console.log(`✅ 2FA ativado com sucesso para: ${username}`);
       }
 
-      console.log(`📋 Resultado verificação 2FA para ${username}: ${verified}`);
       return verified;
     } catch (error: any) {
       console.error('❌ Erro ao verificar código 2FA:', error.message);

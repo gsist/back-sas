@@ -1,4 +1,4 @@
-// src/controller/LoginAdmController.ts
+// src/controller/LoginAdmController.ts - CORRIGIDO
 import { Request, Response } from "express";
 import { LoginAdmService } from "../services/LoginAdmService";
 import jwt from "jsonwebtoken";
@@ -9,7 +9,6 @@ import axios from "axios";
 const loginAdmService = new LoginAdmService();
 
 export default class LoginAdmController {
-  // ==== Helpers internos (somente Controller) ====
   private logAuthAttempt({
     username,
     success,
@@ -37,9 +36,6 @@ export default class LoginAdmController {
     return jwt.sign({ username }, secret, { expiresIn: "1d" });
   }
 
-  // ==== Métodos Públicos (usados nas rotas) ====
-
-  // 1. Login AD (primeira etapa)
   async login(req: Request, res: Response) {
     const { username, password } = req.body;
     const userIp =
@@ -64,7 +60,6 @@ export default class LoginAdmController {
         return res.status(403).json({ message: "Usuário sem permissão para acessar o sistema." });
       }
 
-      // Verifica status 2FA
       const userStatus = await loginAdmService.getUser2FAStatus(username);
 
       if (userStatus.has2FA) {
@@ -106,7 +101,6 @@ export default class LoginAdmController {
     }
   }
 
-  // 2. Setup 2FA
   async setup2FA(req: Request, res: Response) {
     try {
       const { username } = req.body;
@@ -126,17 +120,22 @@ export default class LoginAdmController {
     }
   }
 
-  // 3. Verificar código 2FA
   async verify2FA(req: Request, res: Response) {
     const { username, code } = req.body;
     const userIp = req.ip || req.headers["x-forwarded-for"] || (req.connection as any).remoteAddress;
 
     try {
+      if (!code || code.length !== 6) {
+        return res.status(400).json({ message: "Código deve ter 6 dígitos" });
+      }
+
+      console.log(`🔐 Verificando 2FA para ${username}, código: ${code}`);
+
       const verified = await loginAdmService.verify2FACode(username, code);
 
       if (!verified) {
         this.logAuthAttempt({ username, success: false, ip: userIp, reason: "Código 2FA inválido" });
-        return res.status(401).json({ message: "Código 2FA inválido" });
+        return res.status(200).json({ message: "Código 2FA inválido. Verifique o código e tente novamente." });
       }
 
       this.logAuthAttempt({ username, success: true, ip: userIp, reason: "2FA OK" });
@@ -153,11 +152,10 @@ export default class LoginAdmController {
     } catch (error: any) {
       console.error(`❌ Erro na verificação 2FA para ${username}:`, error.message);
       this.logAuthAttempt({ username, success: false, ip: userIp, reason: error.message });
-      return res.status(400).json({ message: error.message });
+      return res.status(200).json({ message: error.message });
     }
   }
 
-  // 4. Verificar status do 2FA
   async check2FARequired(req: Request, res: Response) {
     try {
       const { username } = req.body;
@@ -182,7 +180,6 @@ export default class LoginAdmController {
     }
   }
 
-  // 5. Logout
   async logout(req: Request, res: Response) {
     res.clearCookie("auth_admin", {
       httpOnly: true,
@@ -192,7 +189,6 @@ export default class LoginAdmController {
     return res.json({ message: "Logout realizado com sucesso" });
   }
 
-  // 6. Verificar usuário logado
   async checkUserAdmin(req: Request, res: Response) {
     const cookie_token = req.cookies?.auth_admin as string | undefined;
     try {
@@ -208,7 +204,6 @@ export default class LoginAdmController {
     }
   }
 
-  // ==== Utilitário estático para Service ====
   static async verify2FACode(username: string, code: string): Promise<boolean> {
     return await loginAdmService.verify2FACode(username, code);
   }
