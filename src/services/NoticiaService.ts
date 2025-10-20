@@ -1,6 +1,5 @@
 // src/services/NoticiaService.ts
 import { Noticia } from "../models/Noticia";
-import { Op } from "sequelize";
 
 export interface CreateNoticiaData {
   titulo: string;
