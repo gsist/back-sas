@@ -1,6 +1,6 @@
 // src/services/NoticiaService.ts
-import { Noticia } from '../models/Noticia';
-import { Op } from 'sequelize';
+import { Noticia } from "../models/Noticia";
+import { Op } from "sequelize";
 
 export interface CreateNoticiaData {
   titulo: string;
@@ -15,10 +15,11 @@ export interface UpdateNoticiaData {
 }
 
 export class NoticiaService {
-  private getFullImageUrl(url_img?: string | null) {
+  private getFullImageUrl(url_img?: string | null): string | null {
     if (!url_img) return null;
-    // Usa a URL do backend do .env ou localhost
-    const host = process.env.BACKEND_URL || `http://localhost:${process.env.PORT_BACKEND || 3049}`;
+    const host =
+      process.env.BACKEND_URL ||
+      `http://localhost:${process.env.PORT_BACKEND || 3049}`;
     return `${host}${url_img}`;
   }
 
@@ -27,17 +28,23 @@ export class NoticiaService {
       titulo: data.titulo,
       conteudo: data.conteudo || null,
       url_img: data.url_img || null,
-      created_at: new Date()
+      ativo: true,
+      dataCriacao: new Date(),
     });
 
-    // Atualiza url_img para a URL completa
     noticia.url_img = this.getFullImageUrl(noticia.url_img);
     return noticia;
   }
 
-  async getAllNoticias(): Promise<Noticia[]> {
-    const noticias = await Noticia.findAll({ order: [['dataCriacao', 'DESC']] });
-    return noticias.map(n => {
+  async getAllNoticias(includeArchived = true): Promise<Noticia[]> {
+    const whereClause = includeArchived ? {} : { ativo: true };
+
+    const noticias = await Noticia.findAll({
+      where: whereClause,
+      order: [["dataCriacao", "DESC"]],
+    });
+
+    return noticias.map((n) => {
       n.url_img = this.getFullImageUrl(n.url_img);
       return n;
     });
@@ -50,7 +57,19 @@ export class NoticiaService {
     return noticia;
   }
 
-  async updateNoticia(id: number, data: UpdateNoticiaData): Promise<Noticia | null> {
+  async arquivarNoticia(id: number): Promise<Noticia | null> {
+    const noticia = await Noticia.findByPk(id);
+    if (!noticia) return null;
+
+    await noticia.update({ ativo: false });
+    noticia.url_img = this.getFullImageUrl(noticia.url_img);
+    return noticia;
+  }
+
+  async updateNoticia(
+    id: number,
+    data: UpdateNoticiaData
+  ): Promise<Noticia | null> {
     const noticia = await Noticia.findByPk(id);
     if (!noticia) return null;
     await noticia.update(data);
@@ -63,12 +82,13 @@ export class NoticiaService {
       where: {
         [Op.or]: [
           { titulo: { [Op.like]: `%${term}%` } },
-          { conteudo: { [Op.like]: `%${term}%` } }
-        ]
+          { conteudo: { [Op.like]: `%${term}%` } },
+        ],
       },
-      order: [['dataCriacao', 'DESC']]
+      order: [["dataCriacao", "DESC"]],
     });
-    return noticias.map(n => {
+
+    return noticias.map((n) => {
       n.url_img = this.getFullImageUrl(n.url_img);
       return n;
     });

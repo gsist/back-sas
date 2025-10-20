@@ -3,16 +3,13 @@ import { Request, Response } from "express";
 import NoticiaService, { CreateNoticiaData, UpdateNoticiaData } from "../services/NoticiaService";
 
 export class NoticiaController {
-  // Criar notícia
   async create(req: Request, res: Response): Promise<Response> {
     try {
       const { titulo, conteudo } = req.body;
-
       if (!titulo || titulo.trim() === "") {
         return res.status(400).json({ error: "Título é obrigatório em noticia" });
       }
 
-      // Salva o caminho da imagem se enviada
       const url_img = req.file ? `/uploads/noticias/${req.file.filename}` : null;
 
       const noticiaData: CreateNoticiaData = {
@@ -30,7 +27,6 @@ export class NoticiaController {
     }
   }
 
-  // Listar todas as notícias
   async getAll(req: Request, res: Response): Promise<Response> {
     try {
       const noticias = await NoticiaService.getAllNoticias();
@@ -45,47 +41,26 @@ export class NoticiaController {
     }
   }
 
-  // Buscar notícia por ID
-  async getById(req: Request, res: Response): Promise<Response> {
-    try {
-      const { id } = req.params;
-
-      if (!id) return res.status(400).json({ error: "ID é obrigatório" });
-
-      const noticiaId = parseInt(id, 10);
-      if (isNaN(noticiaId)) return res.status(400).json({ error: "ID inválido" });
-
-      const noticia = await NoticiaService.getNoticiaById(noticiaId);
-      if (!noticia) return res.status(404).json({ error: "Notícia não encontrada" });
-
-      return res.status(200).json({ message: "Notícia recuperada com sucesso", data: noticia });
-    } catch (error) {
-      console.error("Erro ao buscar notícia:", error);
-      return res.status(500).json({ error: "Erro interno do servidor ao buscar notícia" });
-    }
-  }
-
-  // Atualizar notícia
   async update(req: Request, res: Response): Promise<Response> {
     try {
-      const { id } = req.params;
+      const idParam = req.params.id;
+      if (!idParam) return res.status(400).json({ error: "ID é obrigatório" });
 
-      if (!id) return res.status(400).json({ error: "ID é obrigatório" });
-
-      const noticiaId = parseInt(id, 10);
+      const noticiaId = parseInt(idParam, 10);
       if (isNaN(noticiaId)) return res.status(400).json({ error: "ID inválido" });
 
       const { titulo, conteudo } = req.body;
-
       const updateData: UpdateNoticiaData = {};
+
       if (titulo !== undefined) {
         if (titulo.trim() === "") return res.status(400).json({ error: "Título não pode ser vazio" });
         updateData.titulo = titulo.trim();
       }
 
-      updateData.conteudo = conteudo !== undefined ? (conteudo ? conteudo.trim() : null) : undefined;
+      if (conteudo !== undefined) {
+        updateData.conteudo = conteudo.trim() === "" ? null : conteudo.trim();
+      }
 
-      // Atualiza a imagem se foi enviada
       if (req.file) {
         updateData.url_img = `/uploads/noticias/${req.file.filename}`;
       }
@@ -100,7 +75,6 @@ export class NoticiaController {
     }
   }
 
-  // Buscar notícias por termo
   async search(req: Request, res: Response): Promise<Response> {
     try {
       const q = req.query.q;
@@ -117,6 +91,24 @@ export class NoticiaController {
     } catch (error) {
       console.error("Erro ao buscar notícias:", error);
       return res.status(500).json({ error: "Erro interno do servidor ao buscar notícias" });
+    }
+  }
+
+  async arquivar(req: Request, res: Response): Promise<Response> {
+    try {
+      const idParam = req.params.id;
+      if (!idParam) return res.status(400).json({ error: "ID é obrigatório" });
+
+      const noticiaId = parseInt(idParam, 10);
+      if (isNaN(noticiaId)) return res.status(400).json({ error: "ID inválido" });
+
+      const noticia = await NoticiaService.arquivarNoticia(noticiaId);
+      if (!noticia) return res.status(404).json({ error: "Notícia não encontrada" });
+
+      return res.status(200).json({ message: "Notícia arquivada com sucesso", data: noticia });
+    } catch (error) {
+      console.error("Erro ao arquivar notícia:", error);
+      return res.status(500).json({ error: "Erro interno do servidor ao arquivar notícia" });
     }
   }
 }
