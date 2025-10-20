@@ -28,19 +28,20 @@ export class NoticiaController {
   }
 
   async getAll(req: Request, res: Response): Promise<Response> {
-    try {
-      // ⚡ Retorna apenas notícias ativas
-      const noticias = await NoticiaService.getAllNoticias(false);
-      return res.status(200).json({
-        message: "Notícias recuperadas com sucesso",
-        data: noticias,
-        total: noticias.length,
-      });
-    } catch (error) {
-      console.error("Erro ao buscar notícias:", error);
-      return res.status(500).json({ error: "Erro interno do servidor ao buscar notícias" });
-    }
+  try {
+    // ⚡ Retorna todas, incluindo arquivadas
+    const noticias = await NoticiaService.getAllNoticias(true);
+    return res.status(200).json({
+      message: "Notícias recuperadas com sucesso",
+      data: noticias,
+      total: noticias.length,
+    });
+  } catch (error) {
+    console.error("Erro ao buscar notícias:", error);
+    return res.status(500).json({ error: "Erro interno do servidor ao buscar notícias" });
   }
+}
+
 
   async getById(req: Request, res: Response): Promise<Response> {
     try {
