@@ -7,7 +7,7 @@ export class NoticiaController {
     try {
       const { titulo, conteudo } = req.body;
       if (!titulo || titulo.trim() === "") {
-        return res.status(400).json({ error: "Título é obrigatório em noticia" });
+        return res.status(400).json({ error: "Título é obrigatório em notícia" });
       }
 
       const url_img = req.file ? `/uploads/noticias/${req.file.filename}` : null;
@@ -29,7 +29,8 @@ export class NoticiaController {
 
   async getAll(req: Request, res: Response): Promise<Response> {
     try {
-      const noticias = await NoticiaService.getAllNoticias();
+      // ⚡ Retorna apenas notícias ativas
+      const noticias = await NoticiaService.getAllNoticias(false);
       return res.status(200).json({
         message: "Notícias recuperadas com sucesso",
         data: noticias,
@@ -38,6 +39,24 @@ export class NoticiaController {
     } catch (error) {
       console.error("Erro ao buscar notícias:", error);
       return res.status(500).json({ error: "Erro interno do servidor ao buscar notícias" });
+    }
+  }
+
+  async getById(req: Request, res: Response): Promise<Response> {
+    try {
+      const { id } = req.params;
+      if (!id) return res.status(400).json({ error: "ID é obrigatório" });
+
+      const noticiaId = parseInt(id, 10);
+      if (isNaN(noticiaId)) return res.status(400).json({ error: "ID inválido" });
+
+      const noticia = await NoticiaService.getNoticiaById(noticiaId);
+      if (!noticia) return res.status(404).json({ error: "Notícia não encontrada" });
+
+      return res.status(200).json({ message: "Notícia recuperada com sucesso", data: noticia });
+    } catch (error) {
+      console.error("Erro ao buscar notícia:", error);
+      return res.status(500).json({ error: "Erro interno do servidor ao buscar notícia" });
     }
   }
 
@@ -75,25 +94,6 @@ export class NoticiaController {
     }
   }
 
-  async getById(req: Request, res: Response): Promise<Response> {
-    try {
-      const { id } = req.params;
-
-      if (!id) return res.status(400).json({ error: "ID é obrigatório" });
-
-      const noticiaId = parseInt(id, 10);
-      if (isNaN(noticiaId)) return res.status(400).json({ error: "ID inválido" });
-
-      const noticia = await NoticiaService.getNoticiaById(noticiaId);
-      if (!noticia) return res.status(404).json({ error: "Notícia não encontrada" });
-
-      return res.status(200).json({ message: "Notícia recuperada com sucesso", data: noticia });
-    } catch (error) {
-      console.error("Erro ao buscar notícia:", error);
-      return res.status(500).json({ error: "Erro interno do servidor ao buscar notícia" });
-    }
-  }
-
   async arquivar(req: Request, res: Response): Promise<Response> {
     try {
       const idParam = req.params.id;
@@ -114,3 +114,4 @@ export class NoticiaController {
 }
 
 export default new NoticiaController();
+

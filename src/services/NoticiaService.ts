@@ -1,4 +1,3 @@
-// src/services/NoticiaService.ts
 import { Noticia } from "../models/Noticia";
 
 export interface CreateNoticiaData {
@@ -65,12 +64,10 @@ export class NoticiaService {
     return noticia;
   }
 
-  async updateNoticia(
-    id: number,
-    data: UpdateNoticiaData
-  ): Promise<Noticia | null> {
+  async updateNoticia(id: number, data: UpdateNoticiaData): Promise<Noticia | null> {
     const noticia = await Noticia.findByPk(id);
     if (!noticia) return null;
+
     await noticia.update(data);
     noticia.url_img = this.getFullImageUrl(noticia.url_img);
     return noticia;
@@ -78,3 +75,4 @@ export class NoticiaService {
 }
 
 export default new NoticiaService();
+
