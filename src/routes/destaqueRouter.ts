@@ -5,16 +5,16 @@ import { uploadDestaques } from "../config/multer";
 
 const destaqueRouter = Router();
 
-// Listar todos
+// Listar todos os destaques
 destaqueRouter.get("/", DestaqueController.getAll);
 
-// Buscar por ID
-destaqueRouter.get("/:id", DestaqueController.getById);
+// Criar destaque com upload de imagem
+destaqueRouter.post("/create", uploadDestaques.single("url_img"), DestaqueController.create);
 
-// Criar com upload de imagem
-destaqueRouter.post("/create", uploadDestaques.single("url_img"), DestaqueController.create); // Corrigido de /creat para /create
-
-// Atualizar com upload de imagem
+// Atualizar destaque com upload de imagem
 destaqueRouter.put("/:id", uploadDestaques.single("url_img"), DestaqueController.update);
+
+// Arquivar / Desarquivar destaque
+destaqueRouter.put("/arquivar/:id", DestaqueController.arquivar);
 
 export default destaqueRouter;

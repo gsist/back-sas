@@ -5,9 +5,6 @@ import DestaqueService, { CreateDestaqueData, UpdateDestaqueData } from "../serv
 export class DestaqueController {
   async create(req: Request, res: Response): Promise<Response> {
     try {
-      console.log("BODY RECEBIDO:", req.body);
-      console.log("FILE RECEBIDO:", req.file);
-      
       const titulo = req.body.titulo || req.body?.fields?.titulo;
       if (!titulo || titulo.trim() === "") {
         return res.status(400).json({ error: "Título é obrigatório em destaque" });
@@ -38,24 +35,6 @@ export class DestaqueController {
     }
   }
 
-  async getById(req: Request, res: Response): Promise<Response> {
-    try {
-      const { id } = req.params;
-      if (!id) return res.status(400).json({ error: "ID é obrigatório" });
-
-      const destaqueId = parseInt(id, 10);
-      if (isNaN(destaqueId)) return res.status(400).json({ error: "ID inválido" });
-
-      const destaque = await DestaqueService.getDestaqueById(destaqueId);
-      if (!destaque) return res.status(404).json({ error: "Destaque não encontrado" });
-
-      return res.status(200).json({ message: "Destaque recuperado com sucesso", data: destaque });
-    } catch (error) {
-      console.error("Erro ao buscar destaque:", error);
-      return res.status(500).json({ error: "Erro interno do servidor ao buscar destaque" });
-    }
-  }
-
   async update(req: Request, res: Response): Promise<Response> {
     try {
       const { id } = req.params;
@@ -83,6 +62,27 @@ export class DestaqueController {
     } catch (error) {
       console.error("Erro ao atualizar destaque:", error);
       return res.status(500).json({ error: "Erro interno do servidor ao atualizar destaque" });
+    }
+  }
+
+  async arquivar(req: Request, res: Response): Promise<Response> {
+    try {
+      const { id } = req.params;
+      if (!id) return res.status(400).json({ error: "ID é obrigatório" });
+
+      const destaqueId = parseInt(id, 10);
+      if (isNaN(destaqueId)) return res.status(400).json({ error: "ID inválido" });
+
+      const destaque = await DestaqueService.toggleArquivarDestaque(destaqueId);
+      if (!destaque) return res.status(404).json({ error: "Destaque não encontrado" });
+
+      return res.status(200).json({
+        message: `Destaque ${destaque.arquivado ? "arquivado" : "desarquivado"} com sucesso`,
+        data: destaque,
+      });
+    } catch (error) {
+      console.error("Erro ao arquivar/desarquivar destaque:", error);
+      return res.status(500).json({ error: "Erro interno do servidor ao arquivar/desarquivar destaque" });
     }
   }
 }

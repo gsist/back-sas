@@ -1,4 +1,5 @@
 // src/services/DestaqueService.ts
+
 import { Destaque } from "../models/Destaque";
 
 export interface CreateDestaqueData {
@@ -9,56 +10,44 @@ export interface CreateDestaqueData {
 export interface UpdateDestaqueData {
   titulo?: string;
   url_img?: string | null;
+  arquivado?: boolean; // ✅ adicionamos aqui
 }
 
 export class DestaqueService {
   async createDestaque(data: CreateDestaqueData): Promise<Destaque> {
-    try {
-      return await Destaque.create({
-        titulo: data.titulo,
-        url_img: data.url_img || null,
-        dataCriacao: new Date(),
-      });
-    } catch (error) {
-      throw new Error(`Erro ao criar destaque: ${error}`);
-    }
+    return await Destaque.create({
+      titulo: data.titulo,
+      url_img: data.url_img || null,
+      dataCriacao: new Date(),
+      arquivado: false
+    });
   }
 
   async getAllDestaques(): Promise<Destaque[]> {
-    try {
-      return await Destaque.findAll({
-        order: [["dataCriacao", "DESC"]],
-      });
-    } catch (error) {
-      throw new Error(`Erro ao buscar destaques: ${error}`);
-    }
-  }
-
-  async getDestaqueById(id: number): Promise<Destaque | null> {
-    try {
-      const destaque = await Destaque.findByPk(id);
-      if (!destaque) return null;
-
-      if (destaque.url_img) {
-        destaque.url_img = `${process.env.FRONTEND_URL || "http://localhost:3000"}${destaque.url_img}`;
-      }
-
-      return destaque;
-    } catch (error) {
-      throw new Error(`Erro ao buscar destaque: ${error}`);
-    }
+    return await Destaque.findAll({
+      order: [["dataCriacao", "DESC"]],
+    });
   }
 
   async updateDestaque(id: number, data: UpdateDestaqueData): Promise<Destaque | null> {
-    try {
-      const destaque = await Destaque.findByPk(id);
-      if (!destaque) return null;
+    const destaque = await Destaque.findByPk(id);
+    if (!destaque) return null;
 
-      await destaque.update(data);
-      return destaque;
-    } catch (error) {
-      throw new Error(`Erro ao atualizar destaque: ${error}`);
-    }
+    await destaque.update(data);
+    return destaque;
+  }
+
+  async getById(id: number): Promise<Destaque | null> {
+    return await Destaque.findByPk(id);
+  }
+
+  async toggleArquivarDestaque(id: number): Promise<Destaque | null> {
+    const destaque = await Destaque.findByPk(id);
+    if (!destaque) return null;
+
+    destaque.arquivado = !destaque.arquivado;
+    await destaque.save();
+    return destaque;
   }
 }
 

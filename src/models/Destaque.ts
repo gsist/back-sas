@@ -11,30 +11,26 @@ import {
 export class Destaque extends Model {
   @PrimaryKey
   @AutoIncrement
-  @Column({
-    type: DataType.INTEGER
-  })
+  @Column({ type: DataType.INTEGER })
   id!: number;
 
   @AllowNull(false)
-  @Column({
-    type: DataType.STRING(150),
-    field: "titulo"
-  })
+  @Column({ type: DataType.STRING(150), field: "titulo" })
   titulo!: string;
 
   @AllowNull(true)
-  @Column({
-    type: DataType.STRING(255),
-    field: "url_img"
-  })
+  @Column({ type: DataType.STRING(255), field: "url_img" })
   url_img!: string | null;
+
+  @Default(1)
+  @Column({
+    type: DataType.BOOLEAN,
+  })
+  ativo!: boolean;
+
 
   @AllowNull(false)
   @Default(DataType.NOW)
-  @Column({
-    type: DataType.DATE,
-    field: "data_criacao"
-  })
+  @Column({ type: DataType.DATE, field: "data_criacao" })
   dataCriacao!: Date;
 }
