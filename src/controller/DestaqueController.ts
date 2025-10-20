@@ -1,8 +1,8 @@
-// src/controller/DestaqueController.ts
 import { Request, Response } from "express";
 import DestaqueService, { CreateDestaqueData, UpdateDestaqueData } from "../services/DestaqueService";
 
 export class DestaqueController {
+  // Criar destaque
   async create(req: Request, res: Response): Promise<Response> {
     try {
       const titulo = req.body.titulo || req.body?.fields?.titulo;
@@ -11,10 +11,9 @@ export class DestaqueController {
       }
 
       const url_img = req.file ? `/uploads/destaques/${req.file.filename}` : null;
-
       const destaqueData: CreateDestaqueData = { titulo: titulo.trim(), url_img };
-      const destaque = await DestaqueService.createDestaque(destaqueData);
 
+      const destaque = await DestaqueService.createDestaque(destaqueData);
       return res.status(201).json({ message: "Destaque criado com sucesso", data: destaque });
     } catch (error) {
       console.error("Erro ao criar destaque:", error);
@@ -22,6 +21,7 @@ export class DestaqueController {
     }
   }
 
+  // Buscar todos os destaques ativos
   async getAll(req: Request, res: Response): Promise<Response> {
     try {
       const destaques = await DestaqueService.getAllDestaques();
@@ -32,6 +32,7 @@ export class DestaqueController {
     }
   }
 
+  // Atualizar destaque
   async update(req: Request, res: Response): Promise<Response> {
     try {
       const { id } = req.params;
@@ -62,6 +63,7 @@ export class DestaqueController {
     }
   }
 
+  // Arquivar/desarquivar destaque (toggle ativo)
   async arquivar(req: Request, res: Response): Promise<Response> {
     try {
       const { id } = req.params;
@@ -85,4 +87,3 @@ export class DestaqueController {
 }
 
 export default new DestaqueController();
-
