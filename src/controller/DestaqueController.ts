@@ -1,3 +1,4 @@
+// back-sas/src/controller/DestaqueController.ts
 import { Request, Response } from "express";
 import DestaqueService, { CreateDestaqueData, UpdateDestaqueData } from "../services/DestaqueService";
 
@@ -21,7 +22,7 @@ export class DestaqueController {
     }
   }
 
-  // Buscar todos os destaques ativos
+  // Listar todos os destaques (ativos e inativos)
   async getAll(req: Request, res: Response): Promise<Response> {
     try {
       const destaques = await DestaqueService.getAllDestaques();
@@ -63,7 +64,7 @@ export class DestaqueController {
     }
   }
 
-  // Arquivar/desarquivar destaque (toggle ativo)
+  // Arquivar / Desarquivar destaque
   async arquivar(req: Request, res: Response): Promise<Response> {
     try {
       const { id } = req.params;

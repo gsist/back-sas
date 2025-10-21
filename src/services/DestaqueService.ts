@@ -1,3 +1,4 @@
+// back-sas/src/services/DestaqueService.ts
 import { Destaque } from "../models/Destaque";
 
 export interface CreateDestaqueData {
@@ -12,6 +13,7 @@ export interface UpdateDestaqueData {
 }
 
 export class DestaqueService {
+  // Criar destaque
   async createDestaque(data: CreateDestaqueData): Promise<Destaque> {
     return await Destaque.create({
       titulo: data.titulo,
@@ -21,16 +23,17 @@ export class DestaqueService {
     });
   }
 
+  // Buscar todos os destaques (ativos e inativos)
   async getAllDestaques(): Promise<Destaque[]> {
     return await Destaque.findAll({
-      where: { ativo: true },
       order: [["dataCriacao", "DESC"]],
     });
   }
 
+  // Buscar destaque por ID
   async getDestaqueById(id: number): Promise<Destaque | null> {
     const destaque = await Destaque.findByPk(id);
-    if (!destaque || !destaque.ativo) return null;
+    if (!destaque) return null;
 
     if (destaque.url_img) {
       destaque.url_img = `${process.env.FRONTEND_URL || "http://localhost:3000"}${destaque.url_img}`;
@@ -38,6 +41,7 @@ export class DestaqueService {
     return destaque;
   }
 
+  // Atualizar destaque
   async updateDestaque(id: number, data: UpdateDestaqueData): Promise<Destaque | null> {
     const destaque = await Destaque.findByPk(id);
     if (!destaque) return null;
@@ -46,7 +50,7 @@ export class DestaqueService {
     return destaque;
   }
 
-  // ✅ Novo método para alternar ativo/inativo
+  // Alternar ativo/inativo (arquivar/desarquivar)
   async toggleAtivoDestaque(id: number): Promise<Destaque | null> {
     const destaque = await Destaque.findByPk(id);
     if (!destaque) return null;

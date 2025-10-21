@@ -1,11 +1,10 @@
-// src/routes/destaqueRouter.ts
 import { Router } from "express";
 import DestaqueController from "../controller/DestaqueController";
 import { uploadDestaques } from "../config/multer";
 
 const destaqueRouter = Router();
 
-// Listar todos os destaques
+// Listar todos os destaques (ativos e arquivados)
 destaqueRouter.get("/", DestaqueController.getAll);
 
 // Criar destaque com upload de imagem
@@ -14,7 +13,7 @@ destaqueRouter.post("/create", uploadDestaques.single("url_img"), DestaqueContro
 // Atualizar destaque com upload de imagem
 destaqueRouter.put("/:id", uploadDestaques.single("url_img"), DestaqueController.update);
 
-// Arquivar / Desarquivar destaque
+// Arquivar / Desarquivar destaque (toggle ativo)
 destaqueRouter.put("/arquivar/:id", DestaqueController.arquivar);
 
 export default destaqueRouter;
