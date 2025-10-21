@@ -28,20 +28,18 @@ export class NoticiaController {
   }
 
   async getAll(req: Request, res: Response): Promise<Response> {
-  try {
-    // ⚡ Retorna todas, incluindo arquivadas
-    const noticias = await NoticiaService.getAllNoticias(true);
-    return res.status(200).json({
-      message: "Notícias recuperadas com sucesso",
-      data: noticias,
-      total: noticias.length,
-    });
-  } catch (error) {
-    console.error("Erro ao buscar notícias:", error);
-    return res.status(500).json({ error: "Erro interno do servidor ao buscar notícias" });
+    try {
+      const noticias = await NoticiaService.getAllNoticias(true);
+      return res.status(200).json({
+        message: "Notícias recuperadas com sucesso",
+        data: noticias,
+        total: noticias.length,
+      });
+    } catch (error) {
+      console.error("Erro ao buscar notícias:", error);
+      return res.status(500).json({ error: "Erro interno do servidor ao buscar notícias" });
+    }
   }
-}
-
 
   async getById(req: Request, res: Response): Promise<Response> {
     try {
@@ -103,16 +101,18 @@ export class NoticiaController {
       const noticiaId = parseInt(idParam, 10);
       if (isNaN(noticiaId)) return res.status(400).json({ error: "ID inválido" });
 
-      const noticia = await NoticiaService.arquivarNoticia(noticiaId);
+      const noticia = await NoticiaService.toggleArquivarNoticia(noticiaId);
       if (!noticia) return res.status(404).json({ error: "Notícia não encontrada" });
 
-      return res.status(200).json({ message: "Notícia arquivada com sucesso", data: noticia });
+      return res.status(200).json({
+        message: noticia.ativo ? "Notícia desarquivada com sucesso" : "Notícia arquivada com sucesso",
+        data: noticia,
+      });
     } catch (error) {
-      console.error("Erro ao arquivar notícia:", error);
-      return res.status(500).json({ error: "Erro interno do servidor ao arquivar notícia" });
+      console.error("Erro ao arquivar/desarquivar notícia:", error);
+      return res.status(500).json({ error: "Erro interno do servidor ao arquivar/desarquivar notícia" });
     }
   }
 }
 
 export default new NoticiaController();
-

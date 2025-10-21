@@ -1,3 +1,4 @@
+// back-sas/src/services/NoticiaService.ts
 import { Noticia } from "../models/Noticia";
 
 export interface CreateNoticiaData {
@@ -55,15 +56,6 @@ export class NoticiaService {
     return noticia;
   }
 
-  async arquivarNoticia(id: number): Promise<Noticia | null> {
-    const noticia = await Noticia.findByPk(id);
-    if (!noticia) return null;
-
-    await noticia.update({ ativo: false });
-    noticia.url_img = this.getFullImageUrl(noticia.url_img);
-    return noticia;
-  }
-
   async updateNoticia(id: number, data: UpdateNoticiaData): Promise<Noticia | null> {
     const noticia = await Noticia.findByPk(id);
     if (!noticia) return null;
@@ -72,7 +64,17 @@ export class NoticiaService {
     noticia.url_img = this.getFullImageUrl(noticia.url_img);
     return noticia;
   }
+
+  async toggleArquivarNoticia(id: number): Promise<Noticia | null> {
+    const noticia = await Noticia.findByPk(id);
+    if (!noticia) return null;
+
+    const novoStatus = !noticia.ativo;
+    await noticia.update({ ativo: novoStatus });
+
+    noticia.url_img = this.getFullImageUrl(noticia.url_img);
+    return noticia;
+  }
 }
 
 export default new NoticiaService();
-
