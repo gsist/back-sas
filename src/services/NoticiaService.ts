@@ -25,8 +25,10 @@ export class NoticiaService {
     });
   }
 
-  async getAllNoticias(): Promise<Noticia[]> {
+  async getAllNoticias(ativos?: boolean): Promise<Noticia[]> {
+    const where = ativos !== undefined ? { ativo: ativos } : {};
     return await Noticia.findAll({
+      where,
       order: [["dataCriacao", "DESC"]],
     });
   }
@@ -34,9 +36,6 @@ export class NoticiaService {
   async getNoticiaById(id: number): Promise<Noticia | null> {
     const noticia = await Noticia.findByPk(id);
     if (!noticia) return null;
-
-    // Remove a modificação da URL da imagem aqui
-    // Deixa a URL como está no banco de dados
     return noticia;
   }
 

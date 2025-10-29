@@ -29,7 +29,7 @@ export class NoticiaController {
 
   async getAll(req: Request, res: Response): Promise<Response> {
     try {
-      const noticias = await NoticiaService.getAllNoticias(true);
+      const noticias = await NoticiaService.getAllNoticias();
       return res.status(200).json({
         message: "Notícias recuperadas com sucesso",
         data: noticias,
@@ -101,7 +101,7 @@ export class NoticiaController {
       const noticiaId = parseInt(idParam, 10);
       if (isNaN(noticiaId)) return res.status(400).json({ error: "ID inválido" });
 
-      const noticia = await NoticiaService.toggleArquivarNoticia(noticiaId);
+      const noticia = await NoticiaService.toggleAtivoNoticia(noticiaId);
       if (!noticia) return res.status(404).json({ error: "Notícia não encontrada" });
 
       return res.status(200).json({
