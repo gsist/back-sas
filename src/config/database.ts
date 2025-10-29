@@ -1,9 +1,6 @@
-// src/config/database.ts
-
 import { Sequelize } from 'sequelize-typescript';
 import dotenv from 'dotenv';
 import * as models from '../models';
-
 
 dotenv.config();
 
@@ -16,22 +13,31 @@ export const sequelize = new Sequelize({
   dialect: 'mariadb',
   logging: false,
   models: Object.values(models),
- // todos os modelos
   define: {
     timestamps: false,
     underscored: true,
   },
   dialectOptions: {
     allowPublicKeyRetrieval: true,
+    connectTimeout: 10000, // Aumenta timeout para 10 segundos
   },
 });
 
-// Testar conexão opcional
-export const initDatabase = async () => {
-  try {
-    await sequelize.authenticate();
-    console.log("✅ Conectado ao banco!");
-  } catch (error) {
-    console.error("❌ Erro de conexão:", error);
+// Tenta autenticar e reconectar automaticamente se falhar
+export const initDatabase = async (retries = 3, delay = 3000) => {
+  for (let i = 0; i < retries; i++) {
+    try {
+      await sequelize.authenticate();
+      console.log("✅ Conectado ao banco!");
+      return;
+    } catch (error) {
+      console.error(`❌ Erro de conexão (tentativa ${i + 1}):`, error);
+      if (i < retries - 1) {
+        console.log(`⏳ Tentando reconectar em ${delay / 1000}s...`);
+        await new Promise(res => setTimeout(res, delay));
+      } else {
+        console.error("💥 Falha ao conectar após múltiplas tentativas.");
+      }
+    }
   }
 };
