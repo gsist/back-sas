@@ -36,7 +36,7 @@ export class DestaqueService {
     if (!destaque) return null;
 
     if (destaque.url_img) {
-      destaque.url_img = `${process.env.FRONTEND_URL || "http://localhost:3000"}${destaque.url_img}`;
+      destaque.url_img = `${process.env.FRONTEND_URL }`;
     }
     return destaque;
   }
