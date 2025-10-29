@@ -1,4 +1,4 @@
-// src/services/LoginAdmService.ts - CORRIGIDO
+// src/services/LoginAdmService.ts
 import { UsuarioAd } from "../models/UsuarioAd";
 import * as speakeasy from "speakeasy";
 import * as QRCode from 'qrcode';

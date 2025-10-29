@@ -21,9 +21,7 @@ export default class LoginAdmController {
     reason: string;
   }) {
     const logDir = path.join(__dirname, "../../logs");
-    if (!fs.existsSync(logDir)) {
-      fs.mkdirSync(logDir, { recursive: true });
-    }
+    if (!fs.existsSync(logDir)) fs.mkdirSync(logDir, { recursive: true });
     const logFile = path.join(logDir, "auth.log");
     const entry = `[${new Date().toISOString()}] [${ip}] [${username}] [${
       success ? "SUCCESS" : "FAIL"
@@ -54,7 +52,10 @@ export default class LoginAdmController {
         return res.status(401).json({ message: "Usuário ou senha inválidos." });
       }
 
-      const hasAccess = data.groups.includes("GL_Drts_HostAdmin_MINHACASA");
+      // Usando variável de ambiente GRUPO_AD
+      const requiredGroup = process.env.GRUPO_AD;
+      const hasAccess = data.groups.includes(requiredGroup);
+
       if (!hasAccess) {
         this.logAuthAttempt({ username, success: false, ip: userIp, reason: "Sem acesso ao grupo" });
         return res.status(403).json({ message: "Usuário sem permissão para acessar o sistema." });
