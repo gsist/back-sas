@@ -10,7 +10,7 @@ import { QueryTypes } from 'sequelize';
 dotenv.config();
 
 const app = express();
-const PORT = process.env.PORT_BACKEND || 3001;
+const PORT = process.env.PORT_BACKEND;
 
 // Middleware para JSON
 app.use(express.json());
@@ -25,7 +25,7 @@ app.use(cors({
 
 
 // Caminho absoluto para a pasta uploads
-const uploadsPath = path.join(__dirname, "src", "uploads");
+const uploadsPath = path.join(process.cwd(), "src", "uploads");
 app.use("/uploads", express.static(uploadsPath));
 console.log("Servindo uploads em:", uploadsPath);
 
