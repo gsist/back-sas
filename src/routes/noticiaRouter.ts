@@ -1,23 +1,14 @@
-// src/routes/noticiaRouter.ts
+// back-sas/src/routes/noticiaRouter.ts
 import { Router } from "express";
 import NoticiaController from "../controller/NoticiaController";
 import { uploadNoticias } from "../config/multer";
 
 const noticiaRouter = Router();
 
-// Buscar todas as notícias
-noticiaRouter.get("/", NoticiaController.getAll);
-
-// Buscar notícia por ID
-noticiaRouter.get("/:id", NoticiaController.getById);
-
-// Arquivar / Desarquivar notícia
-noticiaRouter.put("/arquivar/:id", NoticiaController.arquivar);
-
-// Criar notícia (com upload de imagem)
-noticiaRouter.post("/create", uploadNoticias.single("imagem"), NoticiaController.create);
-
-// Atualizar notícia (com upload de imagem opcional)
-noticiaRouter.put("/:id", uploadNoticias.single("imagem"), NoticiaController.update);
+noticiaRouter.get("/", (req, res) => NoticiaController.getAll(req, res));
+noticiaRouter.get("/:id", (req, res) => NoticiaController.getById(req, res));
+noticiaRouter.put("/arquivar/:id", (req, res) => NoticiaController.toggleArquivado(req, res));
+noticiaRouter.post("/create", uploadNoticias.single("imagem"), (req, res) => NoticiaController.create(req, res));
+noticiaRouter.put("/:id", uploadNoticias.single("imagem"), (req, res) => NoticiaController.update(req, res));
 
 export default noticiaRouter;

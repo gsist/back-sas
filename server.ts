@@ -6,6 +6,8 @@ import path from 'path';
 import { sequelize, initDatabase } from './src/config/database';
 import routes from './src/routes';
 import { QueryTypes } from 'sequelize';
+import "./src/jobs/publicarNoticias";
+
 
 dotenv.config();
 
