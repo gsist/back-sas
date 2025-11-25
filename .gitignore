@@ -11,6 +11,8 @@
 .env.test.local
 .env.production.local
 /.uploads
+/uploads/*
+/uploads
 
 # Logs
 npm-debug.log*
