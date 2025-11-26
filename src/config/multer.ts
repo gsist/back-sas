@@ -5,7 +5,7 @@ import path from "path";
 import fs from "fs";
 
 function makeStorage(folderName: string) {
-  const folderPath = path.join(__dirname, "../uploads", folderName);
+  const folderPath = path.join("src", "uploads", folderName);
 
   // garante que a pasta existe
   if (!fs.existsSync(folderPath)) fs.mkdirSync(folderPath, { recursive: true });
