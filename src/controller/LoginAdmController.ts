@@ -1,4 +1,4 @@
-// src/controller/LoginAdmController.ts - CORRIGIDO
+// src/controller/LoginAdmController.ts
 import { Request, Response } from "express";
 import { LoginAdmService } from "../services/LoginAdmService";
 import jwt from "jsonwebtoken";
@@ -9,6 +9,7 @@ import axios from "axios";
 const loginAdmService = new LoginAdmService();
 
 export default class LoginAdmController {
+
   private logAuthAttempt({
     username,
     success,
@@ -34,13 +35,16 @@ export default class LoginAdmController {
     return jwt.sign({ username }, secret, { expiresIn: "1d" });
   }
 
+  /**
+   * LOGIN AD + REGRA DE ACESSO + STATUS 2FA
+   */
   async login(req: Request, res: Response) {
     const { username, password } = req.body;
-    const userIp =
-      req.ip || req.headers["x-forwarded-for"] || (req.connection as any).remoteAddress;
+    const userIp = req.ip || req.headers["x-forwarded-for"] || (req.connection as any).remoteAddress;
 
     try {
       console.log(`🔐 Tentativa de login AD para: ${username}`);
+
       const pyApi = process.env.PYTHON_AUTH_API_GROUPS;
       if (!pyApi) throw new Error("URL da API Python não configurada");
 
@@ -52,7 +56,6 @@ export default class LoginAdmController {
         return res.status(401).json({ message: "Usuário ou senha inválidos." });
       }
 
-      // Usando variável de ambiente GRUPO_AD
       const requiredGroup = process.env.GRUPO_AD;
       const hasAccess = data.groups.includes(requiredGroup);
 
@@ -63,6 +66,13 @@ export default class LoginAdmController {
 
       const userStatus = await loginAdmService.getUser2FAStatus(username);
 
+      // Usuário existe mas está inativo
+      if (userStatus.userId && userStatus.isActive === false) {
+        this.logAuthAttempt({ username, success: false, ip: userIp, reason: "Usuário inativado" });
+        return res.status(403).json({ message: "Usuário inativado. Entre em contato com o administrador." });
+      }
+
+      // Usuário tem 2FA ativo
       if (userStatus.has2FA) {
         this.logAuthAttempt({ username, success: true, ip: userIp, reason: "Aguardando 2FA" });
         return res.json({
@@ -71,75 +81,85 @@ export default class LoginAdmController {
           username,
           userId: userStatus.userId,
         });
-      } else if (userStatus.userId) {
+      }
+
+      // Usuário existe mas ainda não configurou 2FA
+      if (userStatus.userId) {
         this.logAuthAttempt({ username, success: true, ip: userIp, reason: "2FA não configurado" });
         return res.json({
           message: "Autenticação AD OK. Configure o 2FA.",
           requires2FA: false,
-          username,
           needs2FASetup: true,
+          username,
           userId: userStatus.userId,
         });
-      } else {
-        this.logAuthAttempt({ username, success: true, ip: userIp, reason: "Usuário não encontrado no banco" });
-        return res.json({
-          message: "Autenticação AD OK. Usuário precisa ser registrado no sistema.",
-          requires2FA: false,
-          username,
-          needsRegistration: true,
-          needs2FASetup: true,
-        });
       }
+
+      // Usuário NÃO existe no banco → permitir login AD, mas pedir cadastro interno
+      this.logAuthAttempt({ username, success: true, ip: userIp, reason: "Usuário não encontrado no banco" });
+      return res.json({
+        message: "Autenticação AD OK. Usuário não possui cadastro interno.",
+        requires2FA: false,
+        needsRegistration: true,
+        needs2FASetup: false,
+        username
+      });
+
     } catch (err: any) {
       console.error("❌ Erro no login:", err.message);
       this.logAuthAttempt({ username, success: false, ip: userIp, reason: err.message });
 
-      let errorMessage = "Falha na autenticação. Verifique seus dados e tente novamente";
-      if (err.code === "ECONNREFUSED") errorMessage = "Serviço de autenticação indisponível";
-      else if (err.response?.status === 401) errorMessage = "Usuário ou senha inválidos";
+      let msg = "Falha na autenticação. Verifique seus dados e tente novamente";
+      if (err.code === "ECONNREFUSED") msg = "Serviço de autenticação indisponível";
+      else if (err.response?.status === 401) msg = "Usuário ou senha inválidos";
 
-      return res.status(503).json({ errors: errorMessage, message: err.message });
+      return res.status(503).json({ errors: msg });
     }
   }
 
+  /**
+   * GERAR O SEGREDO 2FA
+   * → Nunca retornar 500 se usuário não existir
+   */
   async setup2FA(req: Request, res: Response) {
     try {
       const { username } = req.body;
-      if (!username) return res.status(400).json({ message: "Username é obrigatório" });
+      if (!username) return res.status(400).json({ error: "Username é obrigatório" });
 
-      const secretData = await loginAdmService.generate2FASecret(username);
-      res.json({
-        message: "Segredo 2FA gerado com sucesso",
-        secret: secretData.secret,
-        otpauth_url: secretData.otpauth_url,
-        qrCodeUrl: secretData.qrCodeUrl,
-        username,
-      });
+      const result = await loginAdmService.generate2FASecret(username);
+
+      if (result.error) {
+        return res.json({ error: result.error });
+      }
+
+      return res.json(result);
+
     } catch (error: any) {
-      console.error("❌ Erro ao configurar 2FA:", error.message);
-      res.status(500).json({ message: "Erro ao configurar 2FA", error: error.message });
+      return res.json({ error: error.message });
     }
   }
 
+  /**
+   * VERIFICAR CÓDIGO 2FA
+   */
   async verify2FA(req: Request, res: Response) {
     const { username, code } = req.body;
     const userIp = req.ip || req.headers["x-forwarded-for"] || (req.connection as any).remoteAddress;
 
     try {
       if (!code || code.length !== 6) {
-        return res.status(400).json({ message: "Código deve ter 6 dígitos" });
+        return res.json({ error: "Código deve ter 6 dígitos" });
       }
-
-      console.log(`🔐 Verificando 2FA para ${username}, código: ${code}`);
 
       const verified = await loginAdmService.verify2FACode(username, code);
 
       if (!verified) {
-        this.logAuthAttempt({ username, success: false, ip: userIp, reason: "Código 2FA inválido" });
-        return res.status(200).json({ message: "Código 2FA inválido. Verifique o código e tente novamente." });
+        this.logAuthAttempt({ username, success: false, ip: userIp, reason: "2FA inválido" });
+        return res.json({ error: "Código 2FA inválido" });
       }
 
       this.logAuthAttempt({ username, success: true, ip: userIp, reason: "2FA OK" });
+
       const token = this.generateToken(username);
 
       res.cookie("auth_admin", token, {
@@ -149,44 +169,31 @@ export default class LoginAdmController {
         maxAge: 24 * 60 * 60 * 1000,
       });
 
-      return res.json({ message: "USUÁRIO LOGADO COM SUCESSO", token, username });
+      return res.json({ message: "USUÁRIO LOGADO COM SUCESSO", token });
+
     } catch (error: any) {
-      console.error(`❌ Erro na verificação 2FA para ${username}:`, error.message);
-      this.logAuthAttempt({ username, success: false, ip: userIp, reason: error.message });
-      return res.status(200).json({ message: error.message });
+      return res.json({ error: error.message });
     }
   }
 
+  /**
+   * STATUS 2FA
+   */
   async check2FARequired(req: Request, res: Response) {
     try {
       const { username } = req.body;
-      if (!username) return res.status(400).json({ message: "Username é obrigatório" });
+      if (!username) return res.json({ error: "Username é obrigatório" });
 
-      const userStatus = await loginAdmService.getUser2FAStatus(username);
-      res.json({
-        username: userStatus.username,
-        userId: userStatus.userId,
-        requires2FA: userStatus.has2FA,
-        is2FASetup: userStatus.is2FASetup,
-        needs2FASetup: userStatus.needs2FASetup,
-        message: userStatus.has2FA
-          ? "2FA necessário"
-          : userStatus.needs2FASetup
-          ? "Configure o 2FA"
-          : "2FA não configurado",
-      });
+      const status = await loginAdmService.getUser2FAStatus(username);
+      return res.json(status);
+
     } catch (error: any) {
-      console.error("❌ Erro ao verificar 2FA:", error.message);
-      res.status(500).json({ message: "Erro ao verificar 2FA", error: error.message });
+      return res.json({ error: error.message });
     }
   }
 
   async logout(req: Request, res: Response) {
-    res.clearCookie("auth_admin", {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "strict",
-    });
+    res.clearCookie("auth_admin");
     return res.json({ message: "Logout realizado com sucesso" });
   }
 
@@ -197,15 +204,10 @@ export default class LoginAdmController {
 
       const secret = process.env.TOKEN_SECRET_AD_GROUPS || "default-secret-key";
       const data = jwt.verify(cookie_token, secret) as { username: string };
-      const { username } = data;
-      const firstName = username.split(".")[0];
-      return res.json({ name: firstName, username });
-    } catch (error: any) {
+      return res.json({ username: data.username });
+
+    } catch {
       return res.status(401).json({ errors: "Token inválido" });
     }
-  }
-
-  static async verify2FACode(username: string, code: string): Promise<boolean> {
-    return await loginAdmService.verify2FACode(username, code);
   }
 }
