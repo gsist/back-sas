@@ -7,12 +7,21 @@ import { sequelize, initDatabase } from './src/config/database';
 import routes from './src/routes';
 import { QueryTypes } from 'sequelize';
 import "./src/jobs/publicarNoticias";
-
+import helmet from 'helmet';
 
 dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT_BACKEND;
+
+app.use(helmet({
+  xFrameOptions: { action: 'deny' },
+  hsts: {
+    maxAge: 31536000,
+    includeSubDomains: true,
+    preload: true
+  }
+}));
 
 // Middleware para JSON
 app.use(express.json());
