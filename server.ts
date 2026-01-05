@@ -15,6 +15,9 @@ const app = express();
 const PORT = process.env.PORT_BACKEND;
 
 app.use(helmet({
+  contentSecurityPolicy: false,          
+  crossOriginEmbedderPolicy: false,      
+  crossOriginResourcePolicy: { policy: "cross-origin" }, 
   xFrameOptions: { action: 'deny' },
   hsts: {
     maxAge: 31536000,

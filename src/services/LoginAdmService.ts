@@ -50,8 +50,8 @@ export class LoginAdmService {
     }
 
     const secret = speakeasy.generateSecret({
-      name: `MCMV (${username})`,
-      issuer: "MCMV",
+      name: `SASC (${username})`,
+      issuer: "SASC",
       length: 20
     });
 
