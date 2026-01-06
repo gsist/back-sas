@@ -7,5 +7,4 @@ const noticiaService = new NoticiaService();
 // roda a cada minuto
 cron.schedule("* * * * *", async () => {
   await noticiaService.publicarProgramadas();
-  console.log("⏰ Notícias programadas publicadas (se houver).");
 });
